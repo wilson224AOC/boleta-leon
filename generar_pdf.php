@@ -125,7 +125,7 @@ function generarBoletaPDF(array $t): string {
     // ============================================================
     // DÍAS Y HORAS
     // ============================================================
-    $diasLab = (float)$t['dias_trab'] + (float)$t['dias_descanso'] + (float)$t['Vacaciones'] + (float)$t['dias_feriados'];
+    $diasLab = (float)$t['dias_trab'] + (float)$t['dias_descanso'] + (float)$t['Vacaciones'] + (float)$t['dias_feriados'] + (float)$t['feriado_lab_dias'];
     $hrNorm  = $diasLab * 8;
     $hrExtra = (float)$t['horas_extras'];
 
@@ -166,7 +166,7 @@ function generarBoletaPDF(array $t): string {
     $pdf->SetFont('helvetica', 'B', 7.5);
     $pdf->Cell($VL, 4.5, 'D.DESC.MED.:', 0, 0);
     $pdf->SetFont('helvetica', '', 7.5);
-    $pdf->Cell(0, 4.5, '0.00', 0, 1);
+    $pdf->Cell(0, 4.5, number_format((float)($t['descanso_medico_dias'] ?? 0), 2), 0, 1);
 
     $pdf->SetFont('helvetica', 'B', 7.5);
     $pdf->Cell($DL, 4.5, 'HR.Ex. :', 0, 0);
@@ -222,6 +222,7 @@ function generarBoletaPDF(array $t): string {
         ['BONO ASISTENCIA',  $t['bono_asistencia']],
         ['FERIADO LAB.',     $t['feriado_lab']],
         ['BONO PRODUCCIÓN.', $t['bono_horas']],
+        ['DESC. MEDICO',     $t['descanso_medico_monto'] ?? 0],
     ];
 
     // Columna 2 — No remunerativos

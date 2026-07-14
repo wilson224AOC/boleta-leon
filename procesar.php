@@ -51,40 +51,44 @@ $columnas = [
     'asig_familiar'   => 'P',
     'basico'          => 'Q',
     'dias_trab'       => 'V',
-    'dias_descanso'   => 'W',
-    'Vacaciones'      => 'X',
+    'dias_descanso'   => 'X',
+    'Vacaciones'      => 'W',
     'dias_feriados'   => 'Y',
-    'horas_extras'    => 'AD',
-    'monto_basico'    => 'AE',
-    'monto_asig'      => 'AF',
-    'feriado_lab'     => 'AG',
-    'bono_asistencia' => 'AH',
-    'bono_horas'      => 'AI',
-    'rem_bruta'       => 'AJ',
-    'movilidad'       => 'AK',
-    'viaticos'        => 'AL',
-    'afp_10'          => 'AM',
-    'seg_afp'         => 'AN',
-    'onp'             => 'AO',
-    'renta_5ta'       => 'AP',
-    'otros_desc'      => 'AQ',
-    'adelantos'       => 'AR',
-    'adelanto_quincena' => 'AS',
-    'total_desc'      => 'AT',
-    'neto'            => 'AU',
-    'total_no_rem'    => 'AV',
-    'essalud'         => 'AW',
-    'total_a_pagar'   => 'AX',
-    'f_cese'          => 'AY',
-    'correo'          => 'AZ',
+    'feriado_lab_dias'       => 'Z',
+    'descanso_medico_dias' => 'AA',
+    'horas_extras'    => 'AE',
+    'monto_basico'    => 'AF',
+    'monto_asig'      => 'AG',
+    'feriado_lab'     => 'AH',
+    'bono_asistencia' => 'AI',
+    'bono_horas'      => 'AJ',
+    'descanso_medico_monto' => 'AK',
+    'rem_bruta'       => 'AL',
+    'movilidad'       => 'AM',
+    'viaticos'        => 'AN',
+    'afp_10'          => 'AO',
+    'seg_afp'         => 'AP',
+    'onp'             => 'AQ',
+    'renta_5ta'       => 'AR',
+    'otros_desc'      => 'AS',
+    'adelantos'       => 'AT',
+    'adelanto_quincena' => 'AU',
+    'total_desc'      => 'AV',
+    'neto'            => 'AW',
+    'total_no_rem'    => 'AX',
+    'essalud'         => 'AY',
+    'total_a_pagar'   => 'AZ',
+    'f_cese'          => 'BA',
+    'correo'          => 'BB',
 ];
 
 $campos_numericos = [
     'basico','dias_trab','dias_descanso','horas_extras',
+    'descanso_medico_dias','descanso_medico_monto',
     'monto_basico','monto_asig','feriado_lab','bono_asistencia','bono_horas',
     'rem_bruta','movilidad','viaticos','afp_10','seg_afp','onp',
-    'renta_5ta','otros_desc','adelantos','total_desc','neto',
-    'total_no_rem','essalud','total_a_pagar','extra_pagar'
+    'renta_5ta','otros_desc','adelantos','adelanto_quincena','total_desc','neto',
+    'total_no_rem','essalud','total_a_pagar'
 ];
 
 function limpiarNumero($valor) {
@@ -102,6 +106,24 @@ function formatearFecha($valor) {
     $ts = strtotime($valor);
     if ($ts) return date('d/m/Y', $ts);
     return $valor;
+}
+
+// Algunas planillas guardan el "Periodo" como fórmula (p.ej. =TEXT(fecha,"mmmm - yyyy")).
+// Excel cachea el último texto calculado dentro del archivo; si ese cálculo se hizo
+// alguna vez con Excel en inglés, el valor cacheado queda en inglés (aunque al abrir
+// el Excel ahora se vea en español, porque Excel lo recalcula al vuelo y el script no).
+// Por eso traducimos el nombre del mes aquí, sin importar de dónde venga el texto.
+function traducirMesPeriodo($texto) {
+    static $meses = [
+        'JANUARY' => 'ENERO', 'FEBRUARY' => 'FEBRERO', 'MARCH' => 'MARZO',
+        'APRIL' => 'ABRIL', 'MAY' => 'MAYO', 'JUNE' => 'JUNIO',
+        'JULY' => 'JULIO', 'AUGUST' => 'AGOSTO', 'SEPTEMBER' => 'SEPTIEMBRE',
+        'OCTOBER' => 'OCTUBRE', 'NOVEMBER' => 'NOVIEMBRE', 'DECEMBER' => 'DICIEMBRE',
+    ];
+    foreach ($meses as $en => $es) {
+        $texto = preg_replace('/\b' . $en . '\b/i', $es, $texto);
+    }
+    return $texto;
 }
 
 $trabajadores = [];
@@ -141,7 +163,7 @@ for ($row = 3; $row <= $maxRow; $row++) {
     $periodo = $trabajador['periodo'] ?? '';
     if (is_string($periodo)) {
         $periodo = preg_replace('/(\d{4})\d+$/', '$1', $periodo);
-        $trabajador['periodo'] = strtoupper(trim($periodo));
+        $trabajador['periodo'] = traducirMesPeriodo(strtoupper(trim($periodo)));
     }
 
     $trabajadores[] = $trabajador;
